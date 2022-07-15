@@ -15,42 +15,53 @@ class CalculatorViewController: UIViewController {
     @IBOutlet weak var twentyPctButton: UIButton!
     @IBOutlet weak var splitNumberLabel: UILabel!
     
-    private var tip = 0.0
-    private var splitNumber = 0.0
+    private var result: Double?
+    private var splitNumber: Int?
+    private var tipAmount: Double?
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        guard let resultsVC = segue.destination as? ResultsViewController else { return }
+        resultsVC.result = result
+        resultsVC.splitNumber = splitNumber
+        resultsVC.tipAmount = tipAmount
+    }
 
     @IBAction func tipChanged(_ sender: UIButton) {
         billTextField.endEditing(true)
+        
         switch sender.currentTitle { // 0%, 10%, 20%
         case "0%":
             zeroPctButton.isSelected = true
             tenPctButton.isSelected = false
             twentyPctButton.isSelected = false
-            tip = 1.0 // 0%
+            tipAmount = 1.0 // 0%
         case "10%":
             zeroPctButton.isSelected = false
             tenPctButton.isSelected = true
             twentyPctButton.isSelected = false
-            tip = 1.1 // 10%
+            tipAmount = 1.1 // 10%
         case "20%":
             zeroPctButton.isSelected = false
             tenPctButton.isSelected = false
             twentyPctButton.isSelected = true
-            tip = 1.2 // 20%
+            tipAmount = 1.2 // 20%
         default:
             break
         }
     }
     
     @IBAction func stepperValueChanged(_ sender: UIStepper) {
-        splitNumberLabel.text = String(format: "%0.f", sender.value)
-        splitNumber = sender.value
+        splitNumberLabel.text = String(format: "%.0f", sender.value)
+        splitNumber = Int(sender.value)
     }
     
     @IBAction func calculatePressed(_ sender: UIButton) {
-        guard let bill = Double(billTextField.text ?? "0.00") else { return }
-        let result = (bill * tip) / splitNumber
-        let roundedResult = round(result * 100) / 100
-        print(roundedResult)
+        guard let safeBill = Double(billTextField.text ?? "0.00") else { return }
+        guard let safeTipAmount = tipAmount else { return }
+        guard let safeSplitNumber = splitNumber else { return }
+        let result = (safeBill * safeTipAmount) / Double(safeSplitNumber)
+        
+        self.result = round(result * 100) / 100
     }
 }
 
